@@ -185,7 +185,7 @@ const log=document.getElementById("log");
 
 const entry=document.createElement("div");
 
-entry.innerText=`Clicked at ${timeString}`;
+entry.innerText=`Nutted at ${timeString}`;
 
 log.prepend(entry);
 
