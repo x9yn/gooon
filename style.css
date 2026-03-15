@@ -1,10 +1,8 @@
-/* GLOBAL */
-
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-transition: background-color 0.4s ease, color 0.4s ease;
+transition:background-color .4s,color .4s;
 }
 
 body{
@@ -13,6 +11,7 @@ text-align:center;
 background-size:cover;
 background-position:center;
 min-height:100vh;
+padding:20px;
 }
 
 
@@ -27,19 +26,16 @@ left:50%;
 transform:translate(-50%,-50%);
 
 background:rgba(255,255,255,0.9);
-
 padding:40px;
 
 border-radius:18px;
 
-box-shadow:0px 10px 25px rgba(0,0,0,0.25);
-
-text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,.25);
 
 }
 
 .darkMode .centerBox{
-background:rgba(30,30,30,0.9);
+background:rgba(30,30,30,.9);
 }
 
 
@@ -48,28 +44,24 @@ background:rgba(30,30,30,0.9);
 
 #username{
 
-width:120px;
-padding:10px;
+width:140px;
+
+padding:12px;
 
 border-radius:25px;
-border:2px solid #aaa;
 
-outline:none;
+border:2px solid #aaa;
 
 font-size:16px;
 
-transition:width 0.35s ease, box-shadow 0.35s ease;
+transition:width .35s;
 
 margin-top:15px;
 
 }
 
 #username:focus{
-
 width:260px;
-
-box-shadow:0px 4px 12px rgba(0,0,0,0.2);
-
 }
 
 
@@ -79,9 +71,11 @@ box-shadow:0px 4px 12px rgba(0,0,0,0.2);
 #startButton{
 
 font-size:28px;
+
 padding:18px 45px;
 
 border:none;
+
 border-radius:14px;
 
 background:linear-gradient(45deg,#3b82f6,#2563eb);
@@ -92,21 +86,10 @@ cursor:pointer;
 
 margin-top:20px;
 
-transition:transform 0.2s, box-shadow 0.2s;
-
 }
 
 #startButton:hover{
-
-transform:scale(1.07);
-box-shadow:0px 8px 20px rgba(0,0,0,0.3);
-
-}
-
-#startButton:active{
-
-transform:scale(0.95);
-
+transform:scale(1.05);
 }
 
 
@@ -117,12 +100,17 @@ transform:scale(0.95);
 
 display:flex;
 justify-content:space-between;
-padding:30px;
+gap:20px;
+padding:20px;
 
 }
 
+
+
+/* MAIN AREA */
+
 .main{
-width:70%;
+flex:2;
 }
 
 
@@ -132,9 +120,11 @@ width:70%;
 #clickButton{
 
 font-size:32px;
-padding:20px 50px;
+
+padding:22px 55px;
 
 border:none;
+
 border-radius:14px;
 
 background:linear-gradient(45deg,#3b82f6,#2563eb);
@@ -145,26 +135,11 @@ cursor:pointer;
 
 margin-top:20px;
 
-transition:transform 0.2s, box-shadow 0.2s;
-
-}
-
-#clickButton:hover{
-
-transform:scale(1.05);
-box-shadow:0px 8px 20px rgba(0,0,0,0.3);
-
-}
-
-#clickButton:active{
-
-transform:scale(0.95);
-
 }
 
 
 
-/* CLICK LOG */
+/* LOG */
 
 #log{
 
@@ -180,12 +155,12 @@ padding:10px;
 
 margin-bottom:20px;
 
-background:rgba(255,255,255,0.7);
+background:rgba(255,255,255,.7);
 
 }
 
 .darkMode #log{
-background:rgba(30,30,30,0.8);
+background:rgba(30,30,30,.8);
 }
 
 
@@ -194,7 +169,7 @@ background:rgba(30,30,30,0.8);
 
 .leaderboard{
 
-width:25%;
+flex:1;
 
 background:#eee;
 
@@ -202,8 +177,12 @@ padding:15px;
 
 border-radius:10px;
 
-box-shadow:0px 4px 10px rgba(0,0,0,0.2);
+box-shadow:0 4px 10px rgba(0,0,0,.2);
 
+}
+
+.darkMode .leaderboard{
+background:#1f1f1f;
 }
 
 .leaderboard ul{
@@ -216,10 +195,6 @@ padding:6px;
 border-bottom:1px solid #ccc;
 }
 
-.darkMode .leaderboard{
-background:#1f1f1f;
-}
-
 
 
 /* MODE BUTTONS */
@@ -227,7 +202,8 @@ background:#1f1f1f;
 .modeButtons{
 
 position:fixed;
-bottom:70px;
+
+bottom:80px;
 right:10px;
 
 display:flex;
@@ -241,27 +217,23 @@ gap:8px;
 padding:8px 12px;
 
 border:none;
+
 border-radius:8px;
 
 cursor:pointer;
-
-font-weight:bold;
 
 }
 
 
 
-/* BACKGROUND CONTROLS */
+/* BACKGROUND BUTTON */
 
 .backgroundControls{
 
 position:fixed;
+
 bottom:10px;
 right:10px;
-
-display:flex;
-flex-direction:column;
-gap:6px;
 
 }
 
@@ -280,16 +252,6 @@ border-radius:8px;
 
 cursor:pointer;
 
-font-size:14px;
-
-text-align:center;
-
-transition:0.2s;
-
-}
-
-.bgButtonLabel:hover{
-transform:scale(1.05);
 }
 
 
@@ -297,18 +259,18 @@ transform:scale(1.05);
 /* THEMES */
 
 .lightMode{
-background-color:#f5f5f5;
+background:#f5f5f5;
 color:#111;
 }
 
 .darkMode{
-background-color:#121212;
-color:#ffffff;
+background:#121212;
+color:#fff;
 }
 
 
 
-/* FOOTER TEXT */
+/* FOOTER */
 
 .footerText{
 
@@ -323,5 +285,41 @@ font-size:12px;
 
 color:#888;
 
-background-color:black;
+}
+
+
+
+/* =========================
+   MOBILE FRIENDLY
+========================= */
+
+@media(max-width:800px){
+
+.container{
+flex-direction:column;
+}
+
+.main{
+width:100%;
+}
+
+.leaderboard{
+width:100%;
+margin-top:20px;
+}
+
+#clickButton{
+width:90%;
+font-size:26px;
+padding:20px;
+}
+
+#startButton{
+width:90%;
+}
+
+.centerBox{
+width:90%;
+}
+
 }
