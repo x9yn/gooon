@@ -51,7 +51,7 @@ let li=document.createElement("li");
 
 let last = p.lastClick ? p.lastClick : "Never";
 
-li.innerText = p.name + " : " + p.score + " clicks (Last: " + last + ")";
+li.innerText = p.name + " : " + p.score + " Last Nut (at: " + last + ")";
 
 list.appendChild(li);
 
@@ -93,7 +93,7 @@ let log=document.getElementById("log");
 
 let entry=document.createElement("div");
 
-entry.innerText="Clicked at "+time;
+entry.innerText="nutted at "+time;
 
 log.prepend(entry);
 
