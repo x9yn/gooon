@@ -57,7 +57,7 @@ let li=document.createElement("li");
 
 let last=p.lastClick || "Never";
 
-li.innerText=p.name+" : "+p.score+" Total Goons. (Last: "+last+")";
+li.innerText=p.name+" : "+p.score+" total goons. (Last: "+last+")";
 
 list.appendChild(li);
 
@@ -88,7 +88,11 @@ listenLeaderboard();
 let count=0;
 
 let lastClickTime=0;
+
+/* CLICK TRACKING ARRAYS */
+
 let clickTimes=[];
+let fastClicks=[];
 
 
 
@@ -144,24 +148,47 @@ button.onclick=async()=>{
 
 const now=Date.now();
 
-/* Minimum delay */
+
+
+/* MINIMUM DELAY */
 
 if(now-lastClickTime<120){
-kickPlayer("dumbass autoclicker");
+kickPlayer("spam clicker?");
 return;
 }
 
 lastClickTime=now;
 
-/* CPS detection */
 
-clickTimes.push(now);
-clickTimes=clickTimes.filter(t=>now-t<1000);
 
-if(clickTimes.length>10){
-kickPlayer("dumbass autoclicker");
+/* =====================
+   3 CLICKS PER SECOND CHECK
+===================== */
+
+fastClicks.push(now);
+
+fastClicks = fastClicks.filter(t => now - t < 1000);
+
+if(fastClicks.length > 3){
+kickPlayer("Too many clicks per second");
 return;
 }
+
+
+
+/* =====================
+   10 CPS DETECTION
+===================== */
+
+clickTimes.push(now);
+
+clickTimes = clickTimes.filter(t => now - t < 1000);
+
+if(clickTimes.length > 10){
+kickPlayer("spam clicker?");
+return;
+}
+
 
 
 /* VALID CLICK */
