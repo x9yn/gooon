@@ -1,141 +1,130 @@
-// fuckass imports
+// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";
-import { getFirestore, collection, doc, setDoc, getDocs } 
+import { getFirestore, collection, doc, setDoc, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
-// firebase configuration
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDqedG7hv5AF0CVf2OgH5FhAvMq_X4wzao",
+  apiKey: "YOUR_API_KEY",
   authDomain: "goon1-bae62.firebaseapp.com",
   projectId: "goon1-bae62",
   storageBucket: "goon1-bae62.firebasestorage.app",
   messagingSenderId: "146545482847",
-  appId: "1:146545482847:web:46c8eecafac1a41aa7cfea",
-  measurementId: "G-GXV8X8L07V"
+  appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
 };
 
 
-// i want a girl
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
 
-// oh yeah start me upppp yo
-window.startGame = function(){
 
-let name = document.getElementById("username").value;
+/* =========================
+   REALTIME LEADERBOARD
+========================= */
 
-if(name.trim() === ""){
-alert("Enter a name first");
-return;
-}
+function listenLeaderboard(){
 
-localStorage.setItem("playerName", name);
-
-window.location = "game.html";
-
-};
-
-
-
-if(window.location.pathname.includes("game.html")){
-
-let name = localStorage.getItem("playerName");
-
-document.getElementById("playerName").innerText = name;
-
-let count = 0;
-
-loadLeaderboard();
-
-let button = document.getElementById("clickButton");
-
-button.onclick = async function(){
-
-count++;
-
-let time = new Date().toLocaleTimeString();
-
-let log = document.getElementById("log");
-
-let entry = document.createElement("div");
-
-entry.innerText = "Clicked at " + time;
-
-log.prepend(entry);
-
-await updateScore(name,count);
-
-};
-
-}
-
-
-
-
-async function updateScore(name,score){
-
-await setDoc(doc(db,"leaderboard",name),{
-name:name,
-score:score
-});
-
-loadLeaderboard();
-
-}
-
-
-
-async function loadLeaderboard(){
-
-let list = document.getElementById("leaderboardList");
+const list = document.getElementById("leaderboardList");
 
 if(!list) return;
 
-list.innerHTML = "";
+const leaderboardRef = collection(db,"leaderboard");
 
-let snapshot = await getDocs(collection(db,"leaderboard"));
+onSnapshot(leaderboardRef,(snapshot)=>{
 
 let players = [];
 
-snapshot.forEach(d=>{
-players.push(d.data());
+snapshot.forEach((doc)=>{
+players.push(doc.data());
 });
 
 players.sort((a,b)=>b.score-a.score);
 
+list.innerHTML="";
+
 players.forEach(p=>{
 
-let li = document.createElement("li");
+let li=document.createElement("li");
 
-li.innerText = p.name + " : " + p.score;
+li.innerText=p.name+" : "+p.score;
 
 list.appendChild(li);
 
 });
 
+});
+
 }
 
 
 
-let upload = document.getElementById("bgUpload");
+/* =========================
+   GAME PAGE LOGIC
+========================= */
+
+if(window.location.pathname.includes("game.html")){
+
+const name = localStorage.getItem("playerName");
+
+if(!name){
+window.location="index.html";
+}
+
+document.getElementById("playerName").innerText=name;
+
+let count=0;
+
+listenLeaderboard();
+
+const button=document.getElementById("clickButton");
+
+button.onclick=async()=>{
+
+count++;
+
+let time=new Date().toLocaleTimeString();
+
+let log=document.getElementById("log");
+
+let entry=document.createElement("div");
+
+entry.innerText="Clicked at "+time;
+
+log.prepend(entry);
+
+await setDoc(doc(db,"leaderboard",name),{
+name:name,
+score:count
+});
+
+};
+
+}
+
+
+
+/* =========================
+   BACKGROUND CHANGER
+========================= */
+
+const upload=document.getElementById("bgUpload");
 
 if(upload){
 
 upload.addEventListener("change",function(){
 
-let file = this.files[0];
+const file=this.files[0];
 
 if(!file) return;
 
-let reader = new FileReader();
+const reader=new FileReader();
 
-reader.onload = function(){
+reader.onload=function(){
 
-document.body.style.backgroundImage = "url("+reader.result+")";
+document.body.style.backgroundImage="url("+reader.result+")";
 
 };
 
