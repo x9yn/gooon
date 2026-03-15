@@ -207,13 +207,17 @@ lastClick:timeString
 await addDoc(collection(db,"clickHistory"),{
 
 player:name,
-timestamp:timestamp.toISOString()
+timestamp:new Date().toISOString()
+
+});
 
 });
 
 };
 
 }
+
+
 
 
 
