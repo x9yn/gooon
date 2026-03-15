@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>not a porn site</title>
+<title></title>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,24 +11,40 @@
 
 <div class="main">
 
-<h2 id="playerName"></h2>
+<h2>Your Name:</h2>
+<h1 id="playerName"></h1>
 
 <div id="log"></div>
 
-<button id="clickButton">nut</button>
+<button id="clickButton">CLICK</button>
 
 </div>
 
 <div class="leaderboard">
-<h3>nut board yo</h3>
+
+<h2>Public Leaderboard</h2>
+
 <ul id="leaderboardList"></ul>
+
 </div>
 
 </div>
 
 <input type="file" id="bgUpload" class="bgButton">
 
-<script type="module" src="script.js"></script>
+<script type="module">
+
+import "./script.js";
+
+const name = localStorage.getItem("playerName");
+
+if(!name){
+window.location.href = "index.html";
+}
+
+document.getElementById("playerName").innerText = name;
+
+</script>
 
 </body>
 </html>
