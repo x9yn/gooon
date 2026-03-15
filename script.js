@@ -1,57 +1,63 @@
 // Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, onSnapshot } 
-from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { 
+getFirestore,
+collection,
+doc,
+setDoc,
+deleteDoc,
+onSnapshot,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
-// Firebase configuration
+// Firebase config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "goon1-bae62.firebaseapp.com",
-  projectId: "goon1-bae62",
-  storageBucket: "goon1-bae62.firebasestorage.app",
-  messagingSenderId: "146545482847",
-  appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
+apiKey: "YOUR_API_KEY",
+authDomain: "goon1-bae62.firebaseapp.com",
+projectId: "goon1-bae62",
+storageBucket: "goon1-bae62.firebasestorage.app",
+messagingSenderId: "146545482847",
+appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
 };
 
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+let playersCache=[];
 
 
 
 /* =========================
-   REALTIME LEADERBOARD
+   LEADERBOARD LISTENER
 ========================= */
 
 function listenLeaderboard(){
 
-const list = document.getElementById("leaderboardList");
-
+const list=document.getElementById("leaderboardList");
 if(!list) return;
 
-const leaderboardRef = collection(db,"leaderboard");
+const leaderboardRef=collection(db,"leaderboard");
 
 onSnapshot(leaderboardRef,(snapshot)=>{
 
-let players=[];
+playersCache=[];
 
 snapshot.forEach((doc)=>{
-players.push(doc.data());
+playersCache.push(doc.data());
 });
 
-players.sort((a,b)=>b.score-a.score);
+playersCache.sort((a,b)=>b.score-a.score);
 
 list.innerHTML="";
 
-players.forEach(p=>{
+playersCache.forEach(p=>{
 
 let li=document.createElement("li");
 
-let last = p.lastClick ? p.lastClick : "Never";
+let last=p.lastClick || "Never";
 
-li.innerText = p.name + " : " + p.score + " nuts. Last Nut was (at: " + last + ")";
+li.innerText=p.name+" : "+p.score+" Total Goons. (Last: "+last+")";
 
 list.appendChild(li);
 
@@ -64,12 +70,12 @@ list.appendChild(li);
 
 
 /* =========================
-   GAME PAGE LOGIC
+   GAME LOGIC
 ========================= */
 
 if(window.location.pathname.includes("game.html")){
 
-const name = localStorage.getItem("playerName");
+const name=localStorage.getItem("playerName");
 
 if(!name){
 window.location="index.html";
@@ -77,13 +83,88 @@ window.location="index.html";
 
 document.getElementById("playerName").innerText=name;
 
+listenLeaderboard();
+
 let count=0;
 
-listenLeaderboard();
+let lastClickTime=0;
+let clickTimes=[];
+
+
+
+async function kickPlayer(reason){
+
+alert(reason);
+
+try{
+await deleteDoc(doc(db,"leaderboard",name));
+}catch(e){}
+
+localStorage.removeItem("playerName");
+
+window.location="index.html";
+
+}
+
+
+
+/* PLAYER LIMIT CHECK */
+
+async function checkPlayerLimit(){
+
+const snap=await getDocs(collection(db,"leaderboard"));
+
+let players=[];
+
+snap.forEach(d=>{
+players.push(d.data());
+});
+
+if(players.length>=15){
+
+const exists=players.some(p=>p.name===name);
+
+if(!exists){
+kickPlayer("Server full (15 players max)");
+}
+
+}
+
+}
+
+checkPlayerLimit();
+
+
+
+/* CLICK BUTTON */
 
 const button=document.getElementById("clickButton");
 
 button.onclick=async()=>{
+
+const now=Date.now();
+
+/* Minimum delay */
+
+if(now-lastClickTime<120){
+kickPlayer("Autoclicking detected");
+return;
+}
+
+lastClickTime=now;
+
+/* CPS detection */
+
+clickTimes.push(now);
+clickTimes=clickTimes.filter(t=>now-t<1000);
+
+if(clickTimes.length>10){
+kickPlayer("Autoclicking detected");
+return;
+}
+
+
+/* VALID CLICK */
 
 count++;
 
@@ -93,9 +174,10 @@ let log=document.getElementById("log");
 
 let entry=document.createElement("div");
 
-entry.innerText="nutted at "+time;
+entry.innerText="Clicked at "+time;
 
 log.prepend(entry);
+
 
 await setDoc(doc(db,"leaderboard",name),{
 
@@ -122,7 +204,6 @@ if(upload){
 upload.addEventListener("change",function(){
 
 const file=this.files[0];
-
 if(!file) return;
 
 const reader=new FileReader();
@@ -130,7 +211,6 @@ const reader=new FileReader();
 reader.onload=function(){
 
 document.body.style.backgroundImage="url("+reader.result+")";
-
 localStorage.setItem("backgroundImage",reader.result);
 
 };
@@ -140,8 +220,6 @@ reader.readAsDataURL(file);
 });
 
 }
-
-/* load saved background */
 
 const savedBg=localStorage.getItem("backgroundImage");
 
@@ -178,7 +256,6 @@ localStorage.setItem("theme","dark");
 
 if(lightBtn) lightBtn.onclick=setLightMode;
 if(darkBtn) darkBtn.onclick=setDarkMode;
-
 
 const savedTheme=localStorage.getItem("theme");
 
