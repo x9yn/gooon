@@ -52,7 +52,7 @@ players.forEach(p=>{
 
 const li=document.createElement("li");
 
-li.innerText=`${p.name} : ${p.score} clicks (Last: ${p.lastClick})`;
+li.innerText=`${p.name} : ${p.score} total nuts (Last: ${p.lastClick})`;
 
 list.appendChild(li);
 
@@ -142,7 +142,7 @@ const now=Date.now();
 /* min delay */
 
 if(now-lastClick<120){
-kickPlayer("Autoclick detected");
+kickPlayer("spam spam spam");
 return;
 }
 
@@ -156,7 +156,7 @@ fastClicks.push(now);
 fastClicks=fastClicks.filter(t=>now-t<1000);
 
 if(fastClicks.length>3){
-kickPlayer("Too many clicks per second");
+kickPlayer("spam spam spam");
 return;
 }
 
