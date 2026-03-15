@@ -217,23 +217,7 @@ timestamp:timestamp.toISOString()
 
 /* UPDATE LEADERBOARD */
 
-await setDoc(doc(db,"leaderboard",name),{
 
-name:name,
-score:count,
-lastClick:timeString
-
-});
-
-
-/* SAVE CLICK HISTORY */
-
-await addDoc(collection(db,"clickHistory"),{
-
-player:name,
-timestamp:new Date().toISOString()
-
-});
 
 
 /* =====================
