@@ -5,37 +5,37 @@ getFirestore,
 collection,
 doc,
 deleteDoc,
-onSnapshot,
-query,
-where
+onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
-const firebaseConfig={
-apiKey:"YOUR_API_KEY",
-authDomain:"goon1-bae62.firebaseapp.com",
-projectId:"goon1-bae62",
-storageBucket:"goon1-bae62.firebasestorage.app",
-messagingSenderId:"146545482847",
-appId:"1:146545482847:web:46c8eecafac1a41aa7cfea"
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "goon1-bae62.firebaseapp.com",
+projectId: "goon1-bae62",
+storageBucket: "goon1-bae62.firebasestorage.app",
+messagingSenderId: "146545482847",
+appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const ADMIN_PASSWORD="s";
+const ADMIN_PASSWORD = "s";
 
 
-document.getElementById("loginBtn").onclick=()=>{
+/* LOGIN */
 
-const pass=document.getElementById("adminPassword").value;
+document.getElementById("loginBtn").onclick = () => {
 
-if(pass===ADMIN_PASSWORD){
+const pass = document.getElementById("adminPassword").value;
+
+if(pass === ADMIN_PASSWORD){
 
 document.querySelector(".centerBox").style.display="none";
 document.getElementById("adminPanel").style.display="block";
 
-loadPlayers();
+loadAdminPanel();
 
 }else{
 
@@ -47,100 +47,114 @@ alert("Wrong password");
 
 
 
-function loadPlayers(){
+function loadAdminPanel(){
 
-const container=document.getElementById("adminLeaderboard");
+const container = document.getElementById("adminLeaderboard");
+
+let players = [];
+let clicks = [];
+
+
+/* LOAD CLICK HISTORY */
+
+onSnapshot(collection(db,"clickHistory"),(snapshot)=>{
+
+clicks = [];
+
+snapshot.forEach(doc=>{
+clicks.push(doc.data());
+});
+
+render();
+
+});
+
+
+/* LOAD PLAYERS */
 
 onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
-container.innerHTML="";
+players = [];
 
-snapshot.forEach(player=>{
+snapshot.forEach(doc=>{
+players.push(doc.data());
+});
 
-const data=player.data();
+render();
 
-const card=document.createElement("div");
-
-card.className="adminPlayerCard";
+});
 
 
+function render(){
 
-/* title */
+container.innerHTML = "";
 
-const title=document.createElement("h3");
+players.forEach(player=>{
 
-title.innerText=`${data.name} (${data.score} clicks)`;
+const card = document.createElement("div");
+card.className = "adminPlayerCard";
 
+
+/* PLAYER TITLE */
+
+const title = document.createElement("h3");
+title.innerText = `${player.name} (${player.score} clicks)`;
 card.appendChild(title);
 
 
+/* DELETE BUTTON */
 
-/* delete button */
+const deleteBtn = document.createElement("button");
+deleteBtn.className="adminDelete";
+deleteBtn.innerText="Remove Player";
 
-const del=document.createElement("button");
+deleteBtn.onclick = async()=>{
 
-del.innerText="Remove Player";
-
-del.className="adminDelete";
-
-del.onclick=async()=>{
-
-await deleteDoc(doc(db,"leaderboard",data.name));
+await deleteDoc(doc(db,"leaderboard",player.name));
 
 };
 
-card.appendChild(del);
+card.appendChild(deleteBtn);
 
 
+/* HISTORY TITLE */
 
-/* history */
-
-const history=document.createElement("div");
-
-history.className="adminHistory";
-
-history.innerText="Click History:";
-
-card.appendChild(history);
+const historyTitle = document.createElement("p");
+historyTitle.className="adminHistory";
+historyTitle.innerText="Click History:";
+card.appendChild(historyTitle);
 
 
+/* HISTORY LIST */
 
-const list=document.createElement("ul");
+const list = document.createElement("ul");
 
-card.appendChild(list);
+let playerClicks = clicks.filter(c => c.player === player.name);
 
 
+/* SORT BY TIME */
 
-const q=query(collection(db,"clickHistory"),where("player","==",data.name));
+playerClicks.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
 
-onSnapshot(q,(snap)=>{
 
-list.innerHTML="";
+playerClicks.forEach(c=>{
 
-let clicks=[];
+const li = document.createElement("li");
 
-snap.forEach(c=>clicks.push(c.data()));
+const date = new Date(c.timestamp);
 
-clicks.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
-
-clicks.forEach(c=>{
-
-const li=document.createElement("li");
-
-const time=new Date(c.timestamp);
-
-li.innerText=time.toLocaleString();
+li.innerText = date.toLocaleString();
 
 list.appendChild(li);
 
 });
 
-});
+card.appendChild(list);
 
 container.appendChild(card);
 
 });
 
-});
+}
 
 }
