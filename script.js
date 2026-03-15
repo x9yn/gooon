@@ -147,7 +147,7 @@ const now=Date.now();
 /* Minimum delay */
 
 if(now-lastClickTime<120){
-kickPlayer("Autoclicking detected");
+kickPlayer("dumbass autoclicker");
 return;
 }
 
@@ -159,7 +159,7 @@ clickTimes.push(now);
 clickTimes=clickTimes.filter(t=>now-t<1000);
 
 if(clickTimes.length>10){
-kickPlayer("Autoclicking detected");
+kickPlayer("dumbass autoclicker");
 return;
 }
 
