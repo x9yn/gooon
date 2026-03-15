@@ -33,10 +33,13 @@ const db = getFirestore(app);
 
 
 
+/* ADMIN PASSWORD */
 
-const ADMIN_PASSWORD = "STANFORD";
+const ADMIN_PASSWORD = "s";
 
 
+
+/* LOGIN */
 
 const loginBtn = document.getElementById("loginBtn");
 
