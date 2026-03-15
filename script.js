@@ -1,10 +1,6 @@
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, doc, setDoc, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "goon1-bae62.firebaseapp.com",
@@ -13,17 +9,8 @@ const firebaseConfig = {
   messagingSenderId: "146545482847",
   appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
 };
-
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-
-
-/* =========================
-   REALTIME LEADERBOARD
-========================= */
 
 function listenLeaderboard(){
 
@@ -35,7 +22,7 @@ const leaderboardRef = collection(db,"leaderboard");
 
 onSnapshot(leaderboardRef,(snapshot)=>{
 
-let players = [];
+let players=[];
 
 snapshot.forEach((doc)=>{
 players.push(doc.data());
@@ -49,22 +36,15 @@ players.forEach(p=>{
 
 let li=document.createElement("li");
 
-li.innerText=p.name+" : "+p.score;
+let last = p.lastClick ? p.lastClick : "Never";
+
+li.innerText = p.name + " : " + p.score + " clicks (Last: " + last + ")";
 
 list.appendChild(li);
 
 });
-
 });
-
 }
-
-
-
-/* =========================
-   GAME PAGE LOGIC
-========================= */
-
 if(window.location.pathname.includes("game.html")){
 
 const name = localStorage.getItem("playerName");
@@ -96,8 +76,11 @@ entry.innerText="Clicked at "+time;
 log.prepend(entry);
 
 await setDoc(doc(db,"leaderboard",name),{
+
 name:name,
-score:count
+score:count,
+lastClick:time
+
 });
 
 };
@@ -105,43 +88,8 @@ score:count
 }
 
 
-/* =========================
-   LIGHT / DARK MODE
-========================= */
 
-const lightBtn = document.getElementById("lightModeBtn");
-const darkBtn = document.getElementById("darkModeBtn");
-
-function setLightMode(){
-document.body.classList.remove("darkMode");
-document.body.classList.add("lightMode");
-localStorage.setItem("theme","light");
-}
-
-function setDarkMode(){
-document.body.classList.remove("lightMode");
-document.body.classList.add("darkMode");
-localStorage.setItem("theme","dark");
-}
-
-if(lightBtn) lightBtn.onclick=setLightMode;
-if(darkBtn) darkBtn.onclick=setDarkMode;
-
-
-/* load saved theme */
-
-const savedTheme = localStorage.getItem("theme");
-
-if(savedTheme==="dark"){
-setDarkMode();
-}else{
-setLightMode();
-}
-
-
-/* =========================
-   BACKGROUND CHANGER
-========================= */
+/* oh my god */
 
 const upload=document.getElementById("bgUpload");
 
@@ -165,4 +113,33 @@ reader.readAsDataURL(file);
 
 });
 
+}
+
+const lightBtn=document.getElementById("lightModeBtn");
+const darkBtn=document.getElementById("darkModeBtn");
+
+function setLightMode(){
+
+document.body.classList.remove("darkMode");
+document.body.classList.add("lightMode");
+
+localStorage.setItem("theme","light");
+
+}
+
+function setDarkMode(){
+
+document.body.classList.remove("lightMode");
+document.body.classList.add("darkMode");
+
+localStorage.setItem("theme","dark");
+
+}
+if(lightBtn) lightBtn.onclick=setLightMode;
+if(darkBtn) darkBtn.onclick=setDarkMode;
+const savedTheme=localStorage.getItem("theme");
+if(savedTheme==="dark"){
+setDarkMode();
+}else{
+setLightMode();
 }
