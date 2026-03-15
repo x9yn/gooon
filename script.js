@@ -105,6 +105,39 @@ score:count
 }
 
 
+/* =========================
+   LIGHT / DARK MODE
+========================= */
+
+const lightBtn = document.getElementById("lightModeBtn");
+const darkBtn = document.getElementById("darkModeBtn");
+
+function setLightMode(){
+document.body.classList.remove("darkMode");
+document.body.classList.add("lightMode");
+localStorage.setItem("theme","light");
+}
+
+function setDarkMode(){
+document.body.classList.remove("lightMode");
+document.body.classList.add("darkMode");
+localStorage.setItem("theme","dark");
+}
+
+if(lightBtn) lightBtn.onclick=setLightMode;
+if(darkBtn) darkBtn.onclick=setDarkMode;
+
+
+/* load saved theme */
+
+const savedTheme = localStorage.getItem("theme");
+
+if(savedTheme==="dark"){
+setDarkMode();
+}else{
+setLightMode();
+}
+
 
 /* =========================
    BACKGROUND CHANGER
