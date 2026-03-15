@@ -51,7 +51,7 @@ let li=document.createElement("li");
 
 let last = p.lastClick ? p.lastClick : "Never";
 
-li.innerText = p.name + " : " + p.score + "nuts. Last Nut was (at: " + last + ")";
+li.innerText = p.name + " : " + p.score + " nuts. Last Nut was (at: " + last + ")";
 
 list.appendChild(li);
 
