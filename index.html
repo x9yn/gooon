@@ -1,23 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>goon counter</title>
+<title>Click Leaderboard</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="centerBox">
-    <h1>nutting leaderboard</h1>
 
-    <input id="username" placeholder="gooner name?">
+<h1>Click Competition</h1>
 
-    <button onclick="startGame()">start gooning</button>
+<input id="username" placeholder="Enter your name">
+
+<br><br>
+
+<button id="startButton">Start Clicking</button>
+
 </div>
 
 <input type="file" id="bgUpload" class="bgButton">
 
-<script src="script.js"></script>
+<script type="module">
+
+import "./script.js";
+
+document.getElementById("startButton").addEventListener("click", () => {
+
+const name = document.getElementById("username").value.trim();
+
+if(!name){
+alert("Enter a name first");
+return;
+}
+
+localStorage.setItem("playerName", name);
+
+window.location.href = "game.html";
+
+});
+
+</script>
 
 </body>
 </html>
