@@ -13,7 +13,6 @@ getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
-// Firebase config
 const firebaseConfig = {
 apiKey: "YOUR_API_KEY",
 authDomain: "goon1-bae62.firebaseapp.com",
@@ -26,40 +25,34 @@ appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let playersCache = [];
 
 
-/* =========================
-   LEADERBOARD LISTENER
-========================= */
+/* =====================
+LEADERBOARD LISTENER
+===================== */
 
 function listenLeaderboard(){
 
-const list = document.getElementById("leaderboardList");
-
+const list=document.getElementById("leaderboardList");
 if(!list) return;
 
-const leaderboardRef = collection(db,"leaderboard");
+onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
-onSnapshot(leaderboardRef,(snapshot)=>{
+let players=[];
 
-playersCache = [];
-
-snapshot.forEach((doc)=>{
-playersCache.push(doc.data());
+snapshot.forEach(d=>{
+players.push(d.data());
 });
 
-playersCache.sort((a,b)=>b.score-a.score);
+players.sort((a,b)=>b.score-a.score);
 
 list.innerHTML="";
 
-playersCache.forEach(p=>{
+players.forEach(p=>{
 
-let li = document.createElement("li");
+const li=document.createElement("li");
 
-let last = p.lastClick || "Never";
-
-li.innerText = p.name + " : " + p.score + " total goons. (Last: " + last + ")";
+li.innerText=`${p.name} : ${p.score} clicks (Last: ${p.lastClick})`;
 
 list.appendChild(li);
 
@@ -71,33 +64,30 @@ list.appendChild(li);
 
 
 
-/* =========================
-   GAME LOGIC
-========================= */
+/* =====================
+GAME LOGIC
+===================== */
 
 if(window.location.pathname.includes("game.html")){
 
-const name = localStorage.getItem("playerName");
+const name=localStorage.getItem("playerName");
 
 if(!name){
 window.location="index.html";
 }
 
-document.getElementById("playerName").innerText = name;
+document.getElementById("playerName").innerText=name;
 
 listenLeaderboard();
 
-let count = 0;
+let count=0;
 
-let lastClickTime = 0;
+let lastClick=0;
 
-let clickTimes = [];
-let fastClicks = [];
+let fastClicks=[];
+let clickTimes=[];
 
 
-/* =========================
-   KICK PLAYER FUNCTION
-========================= */
 
 async function kickPlayer(reason){
 
@@ -115,102 +105,99 @@ window.location="index.html";
 
 
 
-/* =========================
-   PLAYER LIMIT CHECK
-========================= */
+/* PLAYER LIMIT */
 
-async function checkPlayerLimit(){
+async function checkLimit(){
 
-const snap = await getDocs(collection(db,"leaderboard"));
+const snap=await getDocs(collection(db,"leaderboard"));
 
 let players=[];
 
-snap.forEach(d=>{
-players.push(d.data());
-});
+snap.forEach(p=>players.push(p.data()));
 
-if(players.length >= 15){
+if(players.length>=15){
 
-const exists = players.some(p => p.name === name);
+const exists=players.some(p=>p.name===name);
 
 if(!exists){
-kickPlayer("server full.");
+kickPlayer("Server full (15 players max)");
 }
 
 }
 
 }
 
-checkPlayerLimit();
+checkLimit();
 
 
 
-/* =========================
-   CLICK BUTTON
-========================= */
+/* CLICK BUTTON */
 
-const button = document.getElementById("clickButton");
+const btn=document.getElementById("clickButton");
 
-button.onclick = async()=>{
+btn.onclick=async()=>{
 
-const now = Date.now();
+const now=Date.now();
 
-/* MINIMUM DELAY CHECK */
+/* min delay */
 
-if(now - lastClickTime < 120){
-kickPlayer("bumass spammer");
+if(now-lastClick<120){
+kickPlayer("Autoclick detected");
 return;
 }
 
-lastClickTime = now;
+lastClick=now;
 
 
-/* 3 CLICKS PER SECOND CHECK */
+/* 3 clicks/sec */
 
 fastClicks.push(now);
 
-fastClicks = fastClicks.filter(t => now - t < 1000);
+fastClicks=fastClicks.filter(t=>now-t<1000);
 
-if(fastClicks.length > 3){
-kickPlayer("autoclicker bruh");
+if(fastClicks.length>3){
+kickPlayer("Too many clicks per second");
 return;
 }
 
 
-/* 10 CPS AUTCLICK DETECTION */
+/* 10 cps */
 
 clickTimes.push(now);
 
-clickTimes = clickTimes.filter(t => now - t < 1000);
+clickTimes=clickTimes.filter(t=>now-t<1000);
 
-if(clickTimes.length > 10){
-kickPlayer("Autoclicking detected");
+if(clickTimes.length>10){
+kickPlayer("Autoclick detected");
 return;
 }
 
 
-/* VALID CLICK */
+/* valid click */
 
 count++;
 
-let time = new Date().toLocaleTimeString();
+const timestamp=new Date();
 
-let log = document.getElementById("log");
+const timeString=timestamp.toLocaleTimeString();
 
-let entry = document.createElement("div");
+const log=document.getElementById("log");
 
-entry.innerText = "Clicked at " + time;
+const entry=document.createElement("div");
+
+entry.innerText=`Clicked at ${timeString}`;
 
 log.prepend(entry);
 
 
-/* UPDATE LEADERBOARD */
+
+/* leaderboard update */
 
 await setDoc(doc(db,"leaderboard",name),{
 
 name:name,
 score:count,
-lastClick:time
+lastClick:timeString
 
 });
 
@@ -220,7 +207,7 @@ lastClick:time
 await addDoc(collection(db,"clickHistory"),{
 
 player:name,
-time:time
+timestamp:timestamp.toISOString()
 
 });
 
@@ -230,25 +217,24 @@ time:time
 
 
 
-/* =========================
-   BACKGROUND CHANGER
-========================= */
+/* =====================
+BACKGROUND CHANGER
+===================== */
 
-const upload = document.getElementById("bgUpload");
+const upload=document.getElementById("bgUpload");
 
 if(upload){
 
 upload.addEventListener("change",function(){
 
-const file = this.files[0];
-
+const file=this.files[0];
 if(!file) return;
 
-const reader = new FileReader();
+const reader=new FileReader();
 
-reader.onload = function(){
+reader.onload=function(){
 
-document.body.style.backgroundImage = "url("+reader.result+")";
+document.body.style.backgroundImage=`url(${reader.result})`;
 
 localStorage.setItem("backgroundImage",reader.result);
 
@@ -260,22 +246,22 @@ reader.readAsDataURL(file);
 
 }
 
-const savedBg = localStorage.getItem("backgroundImage");
+const savedBg=localStorage.getItem("backgroundImage");
 
 if(savedBg){
-document.body.style.backgroundImage = "url("+savedBg+")";
+document.body.style.backgroundImage=`url(${savedBg})`;
 }
 
 
 
-/* =========================
-   LIGHT / DARK MODE
-========================= */
+/* =====================
+LIGHT/DARK MODE
+===================== */
 
-const lightBtn = document.getElementById("lightModeBtn");
-const darkBtn = document.getElementById("darkModeBtn");
+const light=document.getElementById("lightModeBtn");
+const dark=document.getElementById("darkModeBtn");
 
-function setLightMode(){
+function lightMode(){
 
 document.body.classList.remove("darkMode");
 document.body.classList.add("lightMode");
@@ -284,7 +270,7 @@ localStorage.setItem("theme","light");
 
 }
 
-function setDarkMode(){
+function darkMode(){
 
 document.body.classList.remove("lightMode");
 document.body.classList.add("darkMode");
@@ -293,13 +279,13 @@ localStorage.setItem("theme","dark");
 
 }
 
-if(lightBtn) lightBtn.onclick = setLightMode;
-if(darkBtn) darkBtn.onclick = setDarkMode;
+if(light) light.onclick=lightMode;
+if(dark) dark.onclick=darkMode;
 
-const savedTheme = localStorage.getItem("theme");
+const theme=localStorage.getItem("theme");
 
-if(savedTheme === "dark"){
-setDarkMode();
+if(theme==="dark"){
+darkMode();
 }else{
-setLightMode();
+lightMode();
 }
