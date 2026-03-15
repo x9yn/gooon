@@ -227,7 +227,6 @@ background:#1f1f1f;
 .modeButtons{
 
 position:fixed;
-
 bottom:70px;
 right:10px;
 
@@ -242,7 +241,6 @@ gap:8px;
 padding:8px 12px;
 
 border:none;
-
 border-radius:8px;
 
 cursor:pointer;
@@ -253,41 +251,45 @@ font-weight:bold;
 
 
 
-/* BACKGROUND BUTTON */
+/* BACKGROUND CONTROLS */
 
-.bgButton{
+.backgroundControls{
 
 position:fixed;
-
 bottom:10px;
 right:10px;
 
-padding:8px 10px;
+display:flex;
+flex-direction:column;
+gap:6px;
 
-background:#444;
+}
+
+#bgUpload{
+display:none;
+}
+
+.bgButtonLabel{
+
+background:#3b82f6;
 color:white;
+
+padding:8px 12px;
 
 border-radius:8px;
 
 cursor:pointer;
 
+font-size:14px;
+
+text-align:center;
+
+transition:0.2s;
+
 }
 
-.bgButton::file-selector-button{
-
-background:#3b82f6;
-color:white;
-
-border:none;
-
-padding:6px 10px;
-
-border-radius:6px;
-
-cursor:pointer;
-
-margin-right:8px;
-
+.bgButtonLabel:hover{
+transform:scale(1.05);
 }
 
 
