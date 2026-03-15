@@ -323,3 +323,84 @@ width:90%;
 }
 
 }
+
+
+/* ADMIN PANEL */
+
+#adminPanel{
+padding:40px;
+max-width:900px;
+margin:auto;
+}
+
+.adminPlayerCard{
+
+background:#ffffff;
+
+border-radius:14px;
+
+padding:20px;
+
+margin-bottom:20px;
+
+box-shadow:0 6px 15px rgba(0,0,0,0.15);
+
+}
+
+.darkMode .adminPlayerCard{
+background:#1f1f1f;
+}
+
+.adminDelete{
+
+background:#e63946;
+
+color:white;
+
+border:none;
+
+padding:8px 14px;
+
+border-radius:6px;
+
+cursor:pointer;
+
+margin-bottom:10px;
+
+}
+
+.adminDelete:hover{
+opacity:0.8;
+}
+
+.adminHistory{
+
+font-weight:bold;
+
+margin-top:10px;
+
+}
+
+.adminPlayerCard ul{
+
+max-height:200px;
+
+overflow-y:auto;
+
+padding-left:18px;
+
+}
+
+.adminPlayerCard li{
+
+font-size:14px;
+
+margin-bottom:4px;
+
+color:#555;
+
+}
+
+.darkMode .adminPlayerCard li{
+color:#ccc;
+}
