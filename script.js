@@ -201,7 +201,7 @@ let log=document.getElementById("log");
 
 let entry=document.createElement("div");
 
-entry.innerText="Clicked at "+time;
+entry.innerText="nutted at "+time;
 
 log.prepend(entry);
 
