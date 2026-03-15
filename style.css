@@ -1,3 +1,5 @@
+/* GLOBAL */
+
 *{
 margin:0;
 padding:0;
@@ -15,7 +17,7 @@ min-height:100vh;
 
 
 
-/* kaboom */
+/* CENTER PANEL */
 
 .centerBox{
 
@@ -42,6 +44,7 @@ background:rgba(30,30,30,0.9);
 
 
 
+/* USERNAME INPUT */
 
 #username{
 
@@ -71,15 +74,14 @@ box-shadow:0px 4px 12px rgba(0,0,0,0.2);
 
 
 
+/* START BUTTON */
 
 #startButton{
 
 font-size:28px;
-
 padding:18px 45px;
 
 border:none;
-
 border-radius:14px;
 
 background:linear-gradient(45deg,#3b82f6,#2563eb);
@@ -97,7 +99,6 @@ transition:transform 0.2s, box-shadow 0.2s;
 #startButton:hover{
 
 transform:scale(1.07);
-
 box-shadow:0px 8px 20px rgba(0,0,0,0.3);
 
 }
@@ -110,23 +111,18 @@ transform:scale(0.95);
 
 
 
+/* GAME LAYOUT */
 
 .container{
 
 display:flex;
-
 justify-content:space-between;
-
 padding:30px;
 
 }
 
-
-
 .main{
-
 width:70%;
-
 }
 
 
@@ -136,14 +132,12 @@ width:70%;
 #clickButton{
 
 font-size:32px;
-
 padding:20px 50px;
 
 border:none;
+border-radius:14px;
 
-border-radius:12px;
-
-background:linear-gradient(45deg,#4CAF50,#2ecc71);
+background:linear-gradient(45deg,#3b82f6,#2563eb);
 
 color:white;
 
@@ -151,15 +145,14 @@ cursor:pointer;
 
 margin-top:20px;
 
-transition:0.2s;
+transition:transform 0.2s, box-shadow 0.2s;
 
 }
 
 #clickButton:hover{
 
 transform:scale(1.05);
-
-box-shadow:0px 6px 15px rgba(0,0,0,0.3);
+box-shadow:0px 8px 20px rgba(0,0,0,0.3);
 
 }
 
@@ -224,27 +217,22 @@ border-bottom:1px solid #ccc;
 }
 
 .darkMode .leaderboard{
-
 background:#1f1f1f;
-
 }
 
 
 
-/* LIGHT / DARK MODE BUTTONS */
+/* MODE BUTTONS */
 
 .modeButtons{
 
 position:fixed;
 
 bottom:70px;
-
 right:10px;
 
 display:flex;
-
 flex-direction:column;
-
 gap:8px;
 
 }
@@ -265,15 +253,40 @@ font-weight:bold;
 
 
 
-/* BACKGROUND UPLOAD BUTTON */
+/* BACKGROUND BUTTON */
 
 .bgButton{
 
 position:fixed;
 
 bottom:10px;
-
 right:10px;
+
+padding:8px 10px;
+
+background:#444;
+color:white;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+.bgButton::file-selector-button{
+
+background:#3b82f6;
+color:white;
+
+border:none;
+
+padding:6px 10px;
+
+border-radius:6px;
+
+cursor:pointer;
+
+margin-right:8px;
 
 }
 
@@ -282,17 +295,30 @@ right:10px;
 /* THEMES */
 
 .lightMode{
-
 background-color:#f5f5f5;
-
 color:#111;
-
 }
 
 .darkMode{
-
 background-color:#121212;
-
 color:#ffffff;
+}
+
+
+
+/* FOOTER TEXT */
+
+.footerText{
+
+position:fixed;
+
+bottom:2px;
+left:50%;
+
+transform:translateX(-50%);
+
+font-size:12px;
+
+color:#888;
 
 }
