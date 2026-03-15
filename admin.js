@@ -1,4 +1,3 @@
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 
 import {
@@ -12,49 +11,33 @@ where
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
-
-// Firebase config
-const firebaseConfig = {
-
-apiKey: "YOUR_API_KEY",
-
-authDomain: "goon1-bae62.firebaseapp.com",
-
-projectId: "goon1-bae62",
-
-storageBucket: "goon1-bae62.firebasestorage.app",
-
-messagingSenderId: "146545482847",
-
-appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
-
+const firebaseConfig={
+apiKey:"YOUR_API_KEY",
+authDomain:"goon1-bae62.firebaseapp.com",
+projectId:"goon1-bae62",
+storageBucket:"goon1-bae62.firebasestorage.app",
+messagingSenderId:"146545482847",
+appId:"1:146545482847:web:46c8eecafac1a41aa7cfea"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const ADMIN_PASSWORD="s";
 
 
-/* ADMIN PASSWORD */
+document.getElementById("loginBtn").onclick=()=>{
 
-const ADMIN_PASSWORD = "s";
+const pass=document.getElementById("adminPassword").value;
 
-
-
-/* LOGIN */
-
-document.getElementById("loginBtn").onclick = () => {
-
-const pass = document.getElementById("adminPassword").value;
-
-if(pass === ADMIN_PASSWORD){
+if(pass===ADMIN_PASSWORD){
 
 document.querySelector(".centerBox").style.display="none";
 document.getElementById("adminPanel").style.display="block";
 
-loadLeaderboard();
+loadPlayers();
 
-}
-else{
+}else{
 
 alert("Wrong password");
 
@@ -64,87 +47,97 @@ alert("Wrong password");
 
 
 
-/* LOAD PLAYERS */
+function loadPlayers(){
 
-function loadLeaderboard(){
-
-const list=document.getElementById("adminLeaderboard");
+const container=document.getElementById("adminLeaderboard");
 
 onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
-list.innerHTML="";
+container.innerHTML="";
 
 snapshot.forEach(player=>{
 
 const data=player.data();
 
-const container=document.createElement("div");
+const card=document.createElement("div");
 
-container.style.border="1px solid gray";
-container.style.margin="10px";
-container.style.padding="10px";
-container.style.borderRadius="10px";
+card.className="adminPlayerCard";
 
 
-/* PLAYER TITLE */
+
+/* title */
 
 const title=document.createElement("h3");
 
-title.innerText=data.name+" ("+data.score+" clicks)";
+title.innerText=`${data.name} (${data.score} clicks)`;
 
-container.appendChild(title);
+card.appendChild(title);
 
 
-/* DELETE BUTTON */
 
-const deleteBtn=document.createElement("button");
+/* delete button */
 
-deleteBtn.innerText="Delete Player";
+const del=document.createElement("button");
 
-deleteBtn.onclick=async()=>{
+del.innerText="Remove Player";
+
+del.className="adminDelete";
+
+del.onclick=async()=>{
 
 await deleteDoc(doc(db,"leaderboard",data.name));
 
 };
 
-container.appendChild(deleteBtn);
+card.appendChild(del);
 
 
-/* CLICK HISTORY */
 
-const historyTitle=document.createElement("p");
+/* history */
 
-historyTitle.innerText="Click History:";
+const history=document.createElement("div");
 
-container.appendChild(historyTitle);
+history.className="adminHistory";
 
-const historyList=document.createElement("ul");
+history.innerText="Click History:";
 
-container.appendChild(historyList);
+card.appendChild(history);
 
 
-/* LOAD HISTORY */
+
+const list=document.createElement("ul");
+
+card.appendChild(list);
+
+
 
 const q=query(collection(db,"clickHistory"),where("player","==",data.name));
 
-onSnapshot(q,(historySnap)=>{
+onSnapshot(q,(snap)=>{
 
-historyList.innerHTML="";
+list.innerHTML="";
 
-historySnap.forEach(click=>{
+let clicks=[];
+
+snap.forEach(c=>clicks.push(c.data()));
+
+clicks.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+
+clicks.forEach(c=>{
 
 const li=document.createElement("li");
 
-li.innerText=click.data().time;
+const time=new Date(c.timestamp);
 
-historyList.appendChild(li);
+li.innerText=time.toLocaleString();
+
+list.appendChild(li);
 
 });
 
 });
 
-
-list.appendChild(container);
+container.appendChild(card);
 
 });
 
