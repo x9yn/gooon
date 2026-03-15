@@ -34,7 +34,7 @@ const db = getFirestore(app);
 
 
 
-const ADMIN_PASSWORD = "stanford";
+const ADMIN_PASSWORD = "STANFORD";
 
 
 
