@@ -6,7 +6,9 @@ getFirestore,
 collection,
 doc,
 deleteDoc,
-onSnapshot
+onSnapshot,
+query,
+where
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
@@ -32,7 +34,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-
 /* ADMIN PASSWORD */
 
 const ADMIN_PASSWORD = "s";
@@ -41,17 +42,14 @@ const ADMIN_PASSWORD = "s";
 
 /* LOGIN */
 
-const loginBtn = document.getElementById("loginBtn");
-
-loginBtn.onclick = () => {
+document.getElementById("loginBtn").onclick = () => {
 
 const pass = document.getElementById("adminPassword").value;
 
 if(pass === ADMIN_PASSWORD){
 
-document.querySelector(".centerBox").style.display = "none";
-
-document.getElementById("adminPanel").style.display = "block";
+document.querySelector(".centerBox").style.display="none";
+document.getElementById("adminPanel").style.display="block";
 
 loadLeaderboard();
 
@@ -66,37 +64,87 @@ alert("Wrong password");
 
 
 
-/* LOAD LEADERBOARD */
+/* LOAD PLAYERS */
 
 function loadLeaderboard(){
 
-const list = document.getElementById("adminLeaderboard");
+const list=document.getElementById("adminLeaderboard");
 
-onSnapshot(collection(db,"leaderboard"), (snapshot)=>{
+onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
 list.innerHTML="";
 
 snapshot.forEach(player=>{
 
-const data = player.data();
+const data=player.data();
 
-const li = document.createElement("li");
+const container=document.createElement("div");
 
-const btn = document.createElement("button");
+container.style.border="1px solid gray";
+container.style.margin="10px";
+container.style.padding="10px";
+container.style.borderRadius="10px";
 
-btn.innerText = "Delete";
 
-btn.onclick = async () => {
+/* PLAYER TITLE */
+
+const title=document.createElement("h3");
+
+title.innerText=data.name+" ("+data.score+" clicks)";
+
+container.appendChild(title);
+
+
+/* DELETE BUTTON */
+
+const deleteBtn=document.createElement("button");
+
+deleteBtn.innerText="Delete Player";
+
+deleteBtn.onclick=async()=>{
 
 await deleteDoc(doc(db,"leaderboard",data.name));
 
 };
 
-li.innerText = data.name + " : " + data.score + " ";
+container.appendChild(deleteBtn);
 
-li.appendChild(btn);
 
-list.appendChild(li);
+/* CLICK HISTORY */
+
+const historyTitle=document.createElement("p");
+
+historyTitle.innerText="Click History:";
+
+container.appendChild(historyTitle);
+
+const historyList=document.createElement("ul");
+
+container.appendChild(historyList);
+
+
+/* LOAD HISTORY */
+
+const q=query(collection(db,"clickHistory"),where("player","==",data.name));
+
+onSnapshot(q,(historySnap)=>{
+
+historyList.innerHTML="";
+
+historySnap.forEach(click=>{
+
+const li=document.createElement("li");
+
+li.innerText=click.data().time;
+
+historyList.appendChild(li);
+
+});
+
+});
+
+
+list.appendChild(container);
 
 });
 
