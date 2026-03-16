@@ -6,192 +6,181 @@ getFirestore,
 collection,
 doc,
 setDoc,
-deleteDoc,
 addDoc,
+getDocs,
 onSnapshot,
-getDocs
+deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
+
+/* FIREBASE CONFIG */
+
 const firebaseConfig = {
+
 apiKey: "YOUR_API_KEY",
+
 authDomain: "goon1-bae62.firebaseapp.com",
+
 projectId: "goon1-bae62",
+
 storageBucket: "goon1-bae62.firebasestorage.app",
+
 messagingSenderId: "146545482847",
+
 appId: "1:146545482847:web:46c8eecafac1a41aa7cfea"
+
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
 
-/* =====================
-LEADERBOARD LISTENER
-===================== */
+/* USERNAME */
 
-function listenLeaderboard(){
+let name = localStorage.getItem("playerName");
 
-const list=document.getElementById("leaderboardList");
-if(!list) return;
+
+
+/* INDEX PAGE START BUTTON */
+
+const startBtn = document.getElementById("startBtn");
+
+if(startBtn){
+
+startBtn.onclick = async () => {
+
+const usernameInput = document.getElementById("username");
+
+name = usernameInput.value.trim();
+
+if(!name){
+alert("Enter a username");
+return;
+}
+
+
+/* LIMIT 15 PLAYERS */
+
+const snapshot = await getDocs(collection(db,"leaderboard"));
+
+if(snapshot.size >= 15){
+
+alert("Game full (15 players)");
+
+return;
+
+}
+
+localStorage.setItem("playerName",name);
+
+window.location.href="game.html";
+
+};
+
+}
+
+
+
+/* GAME PAGE */
+
+const clickBtn = document.getElementById("clickBtn");
+
+let count = 0;
+
+let clickTimes = [];
+
+
+
+if(clickBtn){
+
+document.getElementById("playerNameDisplay").innerText = name;
+
+
+/* LOAD PLAYER SCORE */
 
 onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
-let players=[];
+snapshot.forEach(docu=>{
 
-snapshot.forEach(d=>{
-players.push(d.data());
-});
+if(docu.data().name === name){
 
-players.sort((a,b)=>b.score-a.score);
+count = docu.data().score;
 
-list.innerHTML="";
-
-players.forEach(p=>{
-
-const li=document.createElement("li");
-
-li.innerText=`${p.name} : ${p.score} total nuts (Last: ${p.lastClick})`;
-
-list.appendChild(li);
+}
 
 });
 
 });
-
-}
-
-
-
-/* =====================
-GAME LOGIC
-===================== */
-
-if(window.location.pathname.includes("game.html")){
-
-const name=localStorage.getItem("playerName");
-
-if(!name){
-window.location="index.html";
-}
-
-document.getElementById("playerName").innerText=name;
-
-listenLeaderboard();
-
-let count=0;
-
-let lastClick=0;
-
-let fastClicks=[];
-let clickTimes=[];
-
-
-
-async function kickPlayer(reason){
-
-alert(reason);
-
-try{
-await deleteDoc(doc(db,"leaderboard",name));
-}catch(e){}
-
-localStorage.removeItem("playerName");
-
-window.location="index.html";
-
-}
-
-
-
-/* PLAYER LIMIT */
-
-async function checkLimit(){
-
-const snap=await getDocs(collection(db,"leaderboard"));
-
-let players=[];
-
-snap.forEach(p=>players.push(p.data()));
-
-if(players.length>=15){
-
-const exists=players.some(p=>p.name===name);
-
-if(!exists){
-kickPlayer("Server full (15 players max)");
-}
-
-}
-
-}
-
-checkLimit();
-
 
 
 /* CLICK BUTTON */
 
-const btn=document.getElementById("clickButton");
+clickBtn.onclick = async () => {
 
-btn.onclick=async()=>{
-
-const now=Date.now();
-
-/* min delay */
-
-if(now-lastClick<120){
-kickPlayer("spam spam spam");
-return;
-}
-
-lastClick=now;
-
-
-/* 3 clicks/sec */
-
-fastClicks.push(now);
-
-fastClicks=fastClicks.filter(t=>now-t<1000);
-
-if(fastClicks.length>3){
-kickPlayer("spam spam spam");
-return;
-}
-
-
-/* 10 cps */
+const now = Date.now();
 
 clickTimes.push(now);
 
-clickTimes=clickTimes.filter(t=>now-t<1000);
 
-if(clickTimes.length>10){
-kickPlayer("Autoclick detected");
+/* KEEP LAST SECOND OF CLICKS */
+
+clickTimes = clickTimes.filter(t => now - t < 1000);
+
+
+/* KICK IF >3 CLICKS IN 1 SECOND */
+
+if(clickTimes.length > 3){
+
+alert("You clicked too fast and were removed.");
+
+await deleteDoc(doc(db,"leaderboard",name));
+
+localStorage.removeItem("playerName");
+
+window.location.href="index.html";
+
 return;
+
 }
 
 
-/* valid click */
+/* ANTI AUTOCLICK SPEED CHECK */
+
+if(clickTimes.length >= 2){
+
+const interval = clickTimes[clickTimes.length-1] - clickTimes[clickTimes.length-2];
+
+if(interval < 50){
+
+alert("Autoclick detected. You were removed.");
+
+await deleteDoc(doc(db,"leaderboard",name));
+
+localStorage.removeItem("playerName");
+
+window.location.href="index.html";
+
+return;
+
+}
+
+}
+
+
 
 count++;
 
-const timestamp=new Date();
 
-const timeString=timestamp.toLocaleTimeString();
+const timestamp = new Date();
 
-const log=document.getElementById("log");
-
-const entry=document.createElement("div");
-
-entry.innerText=`Nutted at ${timeString}`;
-
-log.prepend(entry);
+const timeString = timestamp.toLocaleTimeString();
 
 
 
-/* leaderboard update */
+/* UPDATE LEADERBOARD */
 
 await setDoc(doc(db,"leaderboard",name),{
 
@@ -200,6 +189,7 @@ score:count,
 lastClick:timeString
 
 });
+
 
 
 /* SAVE CLICK HISTORY */
@@ -211,84 +201,130 @@ timestamp:timestamp.toISOString()
 
 });
 
+
+
+/* UPDATE CLICK LOG */
+
+const log = document.getElementById("clickLog");
+
+if(log){
+
+const li = document.createElement("li");
+
+li.innerText = timeString;
+
+log.prepend(li);
+
+}
+
 };
 
 }
 
-/* UPDATE LEADERBOARD */
 
 
+/* LIVE LEADERBOARD */
+
+const leaderboard = document.getElementById("leaderboard");
+
+if(leaderboard){
+
+onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
+
+let players = [];
+
+snapshot.forEach(doc=>{
+players.push(doc.data());
+});
 
 
-/* =====================
-BACKGROUND CHANGER
-===================== */
+players.sort((a,b)=>b.score-a.score);
 
-const upload=document.getElementById("bgUpload");
 
-if(upload){
+leaderboard.innerHTML="";
 
-upload.addEventListener("change",function(){
 
-const file=this.files[0];
-if(!file) return;
+players.forEach(p=>{
 
-const reader=new FileReader();
+const li = document.createElement("li");
 
-reader.onload=function(){
+li.innerText = `${p.name} — ${p.score} clicks (Last: ${p.lastClick || "N/A"})`;
 
-document.body.style.backgroundImage=`url(${reader.result})`;
+leaderboard.appendChild(li);
 
-localStorage.setItem("backgroundImage",reader.result);
-
-};
-
-reader.readAsDataURL(file);
+});
 
 });
 
 }
 
-const savedBg=localStorage.getItem("backgroundImage");
+
+
+/* BACKGROUND CHANGER */
+
+const bgInput = document.getElementById("bgInput");
+
+if(bgInput){
+
+bgInput.onchange = (e)=>{
+
+const file = e.target.files[0];
+
+const reader = new FileReader();
+
+reader.onload = function(event){
+
+document.body.style.backgroundImage = `url(${event.target.result})`;
+
+localStorage.setItem("backgroundImage",event.target.result);
+
+};
+
+reader.readAsDataURL(file);
+
+};
+
+}
+
+
+/* LOAD SAVED BACKGROUND */
+
+const savedBg = localStorage.getItem("backgroundImage");
 
 if(savedBg){
-document.body.style.backgroundImage=`url(${savedBg})`;
+
+document.body.style.backgroundImage = `url(${savedBg})`;
+
+}
+
+
+
+/* DARK MODE */
+
+const darkBtn = document.getElementById("darkMode");
+
+if(darkBtn){
+
+darkBtn.onclick = ()=>{
+
+document.body.classList.add("dark");
+
+};
+
 }
 
 
 
-/* =====================
-LIGHT/DARK MODE
-===================== */
+/* LIGHT MODE */
 
-const light=document.getElementById("lightModeBtn");
-const dark=document.getElementById("darkModeBtn");
+const lightBtn = document.getElementById("lightMode");
 
-function lightMode(){
+if(lightBtn){
 
-document.body.classList.remove("darkMode");
-document.body.classList.add("lightMode");
+lightBtn.onclick = ()=>{
 
-localStorage.setItem("theme","light");
+document.body.classList.remove("dark");
 
-}
+};
 
-function darkMode(){
-
-document.body.classList.remove("lightMode");
-document.body.classList.add("darkMode");
-
-localStorage.setItem("theme","dark");
-
-}
-
-if(light) light.onclick=lightMode;
-if(dark) dark.onclick=darkMode;
-
-const theme=localStorage.getItem("theme");
-
-if(theme==="dark"){
-darkMode();
-}else{
-lightMode();
 }
