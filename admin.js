@@ -164,7 +164,13 @@ playerClicks.forEach(time=>{
 
 const li = document.createElement("li");
 
-const date = new Date(time);
+let date;
+
+if(time && time.toDate){
+date = time.toDate();   // Firestore timestamp
+}else{
+date = new Date(time);  // fallback (old data)
+}
 
 li.innerText = date.toLocaleString();
 
