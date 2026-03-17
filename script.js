@@ -52,7 +52,7 @@ players.forEach(p=>{
 
 const li=document.createElement("li");
 
-li.innerText=`${p.name} : ${p.score} total clicks (Last: ${p.lastClick})`;
+li.innerText=`${p.name} : ${p.score} total nuts! (Last: ${p.lastClick})`;
 
 list.appendChild(li);
 
