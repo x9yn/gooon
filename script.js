@@ -8,7 +8,8 @@ setDoc,
 deleteDoc,
 addDoc,
 onSnapshot,
-getDocs
+getDocs,
+serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 
@@ -51,7 +52,7 @@ players.forEach(p=>{
 
 const li=document.createElement("li");
 
-li.innerText=`${p.name} : ${p.score} total nuts (Last: ${p.lastClick})`;
+li.innerText=`${p.name} : ${p.score} total clicks (Last: ${p.lastClick})`;
 
 list.appendChild(li);
 
@@ -138,7 +139,8 @@ btn.onclick=async()=>{
 
 const now=Date.now();
 
-/* min delay */
+
+/* MIN DELAY */
 
 if(now-lastClick<120){
 kickPlayer("spam spam spam");
@@ -148,7 +150,7 @@ return;
 lastClick=now;
 
 
-/* 3 clicks/sec */
+/* 3 CLICKS PER SECOND */
 
 fastClicks.push(now);
 
@@ -160,7 +162,7 @@ return;
 }
 
 
-/* 10 cps */
+/* 10 CPS LIMIT */
 
 clickTimes.push(now);
 
@@ -172,7 +174,7 @@ return;
 }
 
 
-/* valid click */
+/* VALID CLICK */
 
 count++;
 
@@ -184,13 +186,13 @@ const log=document.getElementById("log");
 
 const entry=document.createElement("div");
 
-entry.innerText=`Nutted at ${timeString}`;
+entry.innerText=`Clicked at ${timeString}`;
 
 log.prepend(entry);
 
 
 
-/* leaderboard update */
+/* UPDATE LEADERBOARD */
 
 await setDoc(doc(db,"leaderboard",name),{
 
@@ -201,21 +203,18 @@ lastClick:timeString
 });
 
 
-/* SAVE CLICK HISTORY */
+/* SAVE CLICK HISTORY (FIXED) */
 
 await addDoc(collection(db,"clickHistory"),{
 
 player:name,
-timestamp:timestamp.toISOString()
+timestamp:serverTimestamp()
 
 });
 
 };
 
 }
-
-/* UPDATE LEADERBOARD */
-
 
 
 
