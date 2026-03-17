@@ -120,7 +120,7 @@ card.className = "adminPlayerCard";
 /* PLAYER NAME */
 
 const title = document.createElement("h3");
-title.innerText = `${player.name} (${player.score} clicks)`;
+title.innerText = `${player.name} (${player.score} nuts)`;
 
 card.appendChild(title);
 
@@ -144,7 +144,7 @@ card.appendChild(deleteBtn);
 
 const historyTitle = document.createElement("p");
 historyTitle.className = "adminHistory";
-historyTitle.innerText = "Click History:";
+historyTitle.innerText = "Nut History:";
 
 card.appendChild(historyTitle);
 
@@ -169,7 +169,7 @@ let date;
 if(time && time.toDate){
 date = time.toDate();   // Firestore timestamp
 }else{
-date = new Date(time);  // fallback (old data)
+date = new Date(time);  // yo icl the firecloud shit is COMPLETELY ai generated im not doing allat
 }
 
 li.innerText = date.toLocaleString();
