@@ -1,4 +1,3 @@
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 
 import {
@@ -6,14 +5,12 @@ getFirestore,
 collection,
 doc,
 setDoc,
+deleteDoc,
 addDoc,
-getDocs,
 onSnapshot,
-deleteDoc
+getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-
-/* FIREBASE */
 
 const firebaseConfig = {
 apiKey: "YOUR_API_KEY",
@@ -29,115 +26,171 @@ const db = getFirestore(app);
 
 
 
-/* USERNAME */
+/* =====================
+LEADERBOARD LISTENER
+===================== */
 
-let name = localStorage.getItem("playerName");
+function listenLeaderboard(){
 
+const list=document.getElementById("leaderboardList");
+if(!list) return;
 
+onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
 
-/* INDEX PAGE */
+let players=[];
 
-const startBtn = document.getElementById("startBtn");
+snapshot.forEach(d=>{
+players.push(d.data());
+});
 
-if(startBtn){
+players.sort((a,b)=>b.score-a.score);
 
-startBtn.onclick = async () => {
+list.innerHTML="";
 
-const username = document.getElementById("username").value.trim();
+players.forEach(p=>{
 
-if(!username){
-alert("Enter a username");
-return;
+const li=document.createElement("li");
+
+li.innerText=`${p.name} : ${p.score} total nuts (Last: ${p.lastClick})`;
+
+list.appendChild(li);
+
+});
+
+});
+
 }
 
-const snapshot = await getDocs(collection(db,"leaderboard"));
 
-if(snapshot.size >= 15){
-alert("Game full (15 players)");
-return;
+
+/* =====================
+GAME LOGIC
+===================== */
+
+if(window.location.pathname.includes("game.html")){
+
+const name=localStorage.getItem("playerName");
+
+if(!name){
+window.location="index.html";
 }
 
-localStorage.setItem("playerName",username);
+document.getElementById("playerName").innerText=name;
 
-window.location.href = "game.html";
+listenLeaderboard();
 
-};
+let count=0;
+
+let lastClick=0;
+
+let fastClicks=[];
+let clickTimes=[];
+
+
+
+async function kickPlayer(reason){
+
+alert(reason);
+
+try{
+await deleteDoc(doc(db,"leaderboard",name));
+}catch(e){}
+
+localStorage.removeItem("playerName");
+
+window.location="index.html";
 
 }
 
 
 
-/* GAME PAGE */
+/* PLAYER LIMIT */
 
-const clickBtn = document.getElementById("clickBtn");
-const leaderboard = document.getElementById("leaderboard");
+async function checkLimit(){
 
-if(clickBtn){
+const snap=await getDocs(collection(db,"leaderboard"));
 
-let count = 0;
-let clickTimes = [];
+let players=[];
 
-document.getElementById("playerNameDisplay").innerText = name;
+snap.forEach(p=>players.push(p.data()));
+
+if(players.length>=15){
+
+const exists=players.some(p=>p.name===name);
+
+if(!exists){
+kickPlayer("Server full (15 players max)");
+}
+
+}
+
+}
+
+checkLimit();
+
 
 
 /* CLICK BUTTON */
 
-clickBtn.onclick = async () => {
+const btn=document.getElementById("clickButton");
 
-const now = Date.now();
+btn.onclick=async()=>{
+
+const now=Date.now();
+
+/* min delay */
+
+if(now-lastClick<120){
+kickPlayer("spam spam spam");
+return;
+}
+
+lastClick=now;
+
+
+/* 3 clicks/sec */
+
+fastClicks.push(now);
+
+fastClicks=fastClicks.filter(t=>now-t<1000);
+
+if(fastClicks.length>3){
+kickPlayer("spam spam spam");
+return;
+}
+
+
+/* 10 cps */
 
 clickTimes.push(now);
 
-clickTimes = clickTimes.filter(t => now - t < 1000);
+clickTimes=clickTimes.filter(t=>now-t<1000);
 
-
-/* 3 CLICKS PER SECOND LIMIT */
-
-if(clickTimes.length > 3){
-
-alert("Too many clicks. You were removed.");
-
-await deleteDoc(doc(db,"leaderboard",name));
-
-localStorage.removeItem("playerName");
-
-window.location.href="index.html";
-
+if(clickTimes.length>10){
+kickPlayer("Autoclick detected");
 return;
-
 }
 
 
-/* AUTOCLICK DETECTION */
-
-if(clickTimes.length >= 2){
-
-let interval = clickTimes[clickTimes.length-1] - clickTimes[clickTimes.length-2];
-
-if(interval < 50){
-
-alert("Autoclick detected.");
-
-await deleteDoc(doc(db,"leaderboard",name));
-
-localStorage.removeItem("playerName");
-
-window.location.href="index.html";
-
-return;
-
-}
-
-}
-
+/* valid click */
 
 count++;
 
-const timestamp = new Date();
-const timeString = timestamp.toLocaleTimeString();
+const timestamp=new Date();
+
+const timeString=timestamp.toLocaleTimeString();
+
+const log=document.getElementById("log");
+
+const entry=document.createElement("div");
+
+entry.innerText=`Nutted at ${timeString}`;
+
+log.prepend(entry);
 
 
-/* UPDATE LEADERBOARD */
+
+/* leaderboard update */
 
 await setDoc(doc(db,"leaderboard",name),{
 
@@ -157,122 +210,84 @@ timestamp:timestamp.toISOString()
 
 });
 
-
-/* UPDATE CLICK LOG */
-
-const log = document.getElementById("clickLog");
-
-if(log){
-
-const li = document.createElement("li");
-
-li.innerText = timeString;
-
-log.prepend(li);
-
-}
-
 };
 
 }
 
-
-
-/* LIVE LEADERBOARD */
-
-if(leaderboard){
-
-onSnapshot(collection(db,"leaderboard"),(snapshot)=>{
-
-let players = [];
-
-snapshot.forEach(doc=>{
-players.push(doc.data());
-});
-
-players.sort((a,b)=>b.score-a.score);
-
-leaderboard.innerHTML="";
-
-players.forEach(p=>{
-
-const li = document.createElement("li");
-
-li.innerText = `${p.name} — ${p.score} clicks (Last: ${p.lastClick || "N/A"})`;
-
-leaderboard.appendChild(li);
-
-});
-
-});
-
-}
+/* UPDATE LEADERBOARD */
 
 
 
-/* BACKGROUND IMAGE */
 
-const bgInput = document.getElementById("bgInput");
+/* =====================
+BACKGROUND CHANGER
+===================== */
 
-if(bgInput){
+const upload=document.getElementById("bgUpload");
 
-bgInput.onchange = (e)=>{
+if(upload){
 
-const file = e.target.files[0];
+upload.addEventListener("change",function(){
 
-const reader = new FileReader();
+const file=this.files[0];
+if(!file) return;
 
-reader.onload = function(event){
+const reader=new FileReader();
 
-document.body.style.backgroundImage = `url(${event.target.result})`;
+reader.onload=function(){
 
-localStorage.setItem("backgroundImage",event.target.result);
+document.body.style.backgroundImage=`url(${reader.result})`;
+
+localStorage.setItem("backgroundImage",reader.result);
 
 };
 
 reader.readAsDataURL(file);
 
-};
+});
 
 }
 
-
-const savedBg = localStorage.getItem("backgroundImage");
+const savedBg=localStorage.getItem("backgroundImage");
 
 if(savedBg){
-
-document.body.style.backgroundImage = `url(${savedBg})`;
-
+document.body.style.backgroundImage=`url(${savedBg})`;
 }
 
 
 
-/* DARK MODE */
+/* =====================
+LIGHT/DARK MODE
+===================== */
 
-const darkBtn = document.getElementById("darkMode");
+const light=document.getElementById("lightModeBtn");
+const dark=document.getElementById("darkModeBtn");
 
-if(darkBtn){
+function lightMode(){
 
-darkBtn.onclick = ()=>{
+document.body.classList.remove("darkMode");
+document.body.classList.add("lightMode");
 
-document.body.classList.add("dark");
-
-};
+localStorage.setItem("theme","light");
 
 }
 
+function darkMode(){
 
+document.body.classList.remove("lightMode");
+document.body.classList.add("darkMode");
 
-/* LIGHT MODE */
+localStorage.setItem("theme","dark");
 
-const lightBtn = document.getElementById("lightMode");
+}
 
-if(lightBtn){
+if(light) light.onclick=lightMode;
+if(dark) dark.onclick=darkMode;
 
-lightBtn.onclick = ()=>{
+const theme=localStorage.getItem("theme");
 
-document.body.classList.remove("dark");
-
-};
-
+if(theme==="dark"){
+darkMode();
+}else{
+lightMode();
 }
