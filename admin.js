@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
-/* ADMIN PASSWORD */
+/* PASSWORD */
 
 const ADMIN_PASSWORD = "s";
 
@@ -40,7 +40,7 @@ if(pass === ADMIN_PASSWORD){
 document.querySelector(".centerBox").style.display = "none";
 document.getElementById("adminPanel").style.display = "block";
 
-loadAdminPanel();
+loadAdmin();
 
 }else{
 
@@ -52,7 +52,7 @@ alert("Wrong password");
 
 
 
-function loadAdminPanel(){
+function loadAdmin(){
 
 const container = document.getElementById("adminLeaderboard");
 
@@ -66,8 +66,13 @@ onSnapshot(collection(db,"clickHistory"), (snapshot)=>{
 
 clickHistory = [];
 
-snapshot.forEach(doc=>{
-clickHistory.push(doc.data());
+snapshot.forEach(docSnap=>{
+
+clickHistory.push({
+id: docSnap.id,
+...docSnap.data()
+});
+
 });
 
 render();
@@ -75,14 +80,14 @@ render();
 });
 
 
-/* LOAD PLAYERS */
+/* LOAD LEADERBOARD */
 
 onSnapshot(collection(db,"leaderboard"), (snapshot)=>{
 
 players = [];
 
-snapshot.forEach(doc=>{
-players.push(doc.data());
+snapshot.forEach(docSnap=>{
+players.push(docSnap.data());
 });
 
 render();
@@ -90,23 +95,24 @@ render();
 });
 
 
-/* RENDER FUNCTION */
+/* RENDER */
 
 function render(){
 
 container.innerHTML = "";
 
+
 /* GROUP CLICKS BY PLAYER */
 
-let clicksByPlayer = {};
+let grouped = {};
 
 clickHistory.forEach(click=>{
 
-if(!clicksByPlayer[click.player]){
-clicksByPlayer[click.player] = [];
+if(!grouped[click.player]){
+grouped[click.player] = [];
 }
 
-clicksByPlayer[click.player].push(click.timestamp);
+grouped[click.player].push(click);
 
 });
 
@@ -117,21 +123,20 @@ const card = document.createElement("div");
 card.className = "adminPlayerCard";
 
 
-/* PLAYER NAME */
+/* PLAYER TITLE */
 
 const title = document.createElement("h3");
 title.innerText = `${player.name} (${player.score} nuts)`;
-
 card.appendChild(title);
 
 
-/* DELETE BUTTON */
+/* DELETE PLAYER BUTTON */
 
 const deleteBtn = document.createElement("button");
 deleteBtn.className = "adminDelete";
 deleteBtn.innerText = "Remove Player";
 
-deleteBtn.onclick = async ()=>{
+deleteBtn.onclick = async () => {
 
 await deleteDoc(doc(db,"leaderboard",player.name));
 
@@ -143,9 +148,7 @@ card.appendChild(deleteBtn);
 /* HISTORY TITLE */
 
 const historyTitle = document.createElement("p");
-historyTitle.className = "adminHistory";
 historyTitle.innerText = "Nut History:";
-
 card.appendChild(historyTitle);
 
 
@@ -153,30 +156,58 @@ card.appendChild(historyTitle);
 
 const list = document.createElement("ul");
 
-const playerClicks = clicksByPlayer[player.name] || [];
+let playerClicks = grouped[player.name] || [];
+
 
 /* SORT NEWEST FIRST */
 
-playerClicks.sort((a,b)=>new Date(b)-new Date(a));
+playerClicks.sort((a,b)=>{
+
+let ta = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+let tb = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+
+return tb - ta;
+
+});
 
 
-playerClicks.forEach(time=>{
+playerClicks.forEach(click=>{
 
 const li = document.createElement("li");
 
+
+/* FIX DATE */
+
 let date;
 
-if(time && time.toDate){
-date = time.toDate();   // Firestore timestamp
+if(click.timestamp && click.timestamp.toDate){
+date = click.timestamp.toDate();
 }else{
-date = new Date(time);  // yo icl the firecloud shit is COMPLETELY ai generated im not doing allat
+date = new Date(click.timestamp);
 }
 
 li.innerText = date.toLocaleString();
 
+
+/* DELETE TIME BUTTON */
+
+const delBtn = document.createElement("button");
+
+delBtn.innerText = "Delete";
+delBtn.style.marginLeft = "10px";
+
+delBtn.onclick = async () => {
+
+await deleteDoc(doc(db,"clickHistory",click.id));
+
+};
+
+li.appendChild(delBtn);
+
 list.appendChild(li);
 
 });
+
 
 card.appendChild(list);
 
